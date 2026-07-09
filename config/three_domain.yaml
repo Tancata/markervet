@@ -1,0 +1,117 @@
+# =============================================================================
+# MarkerVet regime preset: THREE_DOMAIN
+# -----------------------------------------------------------------------------
+# Pan-domain phylogeny placing Eukaryota relative to Archaea and Bacteria using
+# a small subset of (near-)universal markers.  Markers are few and sparse and
+# the deep signal is easily corrupted by compositional attraction and
+# saturation, so relative to prokaryote_deep this preset:
+#
+#   * turns the amino-acid RECODING track ON (Dayhoff-6 by default);
+#   * applies STRICTER compositional and saturation cuts;
+#   * uses a LOOSER support gate (few/sparse markers => weaker per-gene support,
+#     so demanding strong support would drop everything).
+# =============================================================================
+
+regime: three_domain
+workdir: results/three_domain
+
+# -----------------------------------------------------------------------------
+# Inputs
+# -----------------------------------------------------------------------------
+markers:
+  extract: false
+  fasta_dir: "input/three_domain/markers"      # {marker}.faa
+  fasta_ext: ".faa"
+
+  proteomes_dir: "input/three_domain/proteomes"
+  hmm_dir: "resources/universal/hmms"          # pan-domain universal HMM subset
+  hmm_list: null
+
+taxon_table: "config/three_domain.taxa.tsv"
+reference_tree: "resources/universal/three_domain_reference.tree"
+
+# -----------------------------------------------------------------------------
+# 2. Alignment + trimming
+# -----------------------------------------------------------------------------
+align:
+  tool: mafft
+  mode: linsi        # accurate alignment matters more when markers are few
+  threads: 4
+trim:
+  tool: bmge         # BMGE's entropy trimming is well suited to deep divergences
+  clipkit_mode: smart-gap
+  bmge_entropy: 0.4  # stricter (lower) entropy cutoff removes fast/noisy sites
+
+# -----------------------------------------------------------------------------
+# 3. Artefact screen  (STRICTER than prokaryote_deep)
+# -----------------------------------------------------------------------------
+artefact:
+  compositional:
+    enabled: true
+    alpha: 0.10        # stricter: fail at a higher p-value threshold
+  saturation:
+    enabled: true
+    min_slope: 0.65    # stricter: demand a steeper (less saturated) slope
+  treeshrink:
+    enabled: true
+    quantile: 0.05
+
+# -----------------------------------------------------------------------------
+# 4. Gene trees + support-based collapse
+# -----------------------------------------------------------------------------
+gene_trees:
+  model: "LG+C60+G"    # richer mixture for the hardest deep signal; PMSF final
+  pmsf: true
+  ufboot: 1000
+  alrt: 1000
+  threads: 4
+collapse:
+  ufboot_min: 90       # LOOSER support gate: sparse markers rarely hit 95
+  alrt_min: 75
+  logic: either
+
+# -----------------------------------------------------------------------------
+# 5. Congruence vs the reference  (looser support gate, few markers)
+# -----------------------------------------------------------------------------
+congruence:
+  enabled: true
+  support_gate: 70     # looser: count conflict only where support is at least this
+  rf_max: 0.45         # more permissive RF -- expect more genuine deep uncertainty
+  quartet_max: 0.40
+  gcf_min: null
+
+# -----------------------------------------------------------------------------
+# 6. Monophyly recovery
+# -----------------------------------------------------------------------------
+monophyly:
+  support_gate: 70     # looser than prokaryote_deep
+  recovery_min: 0.75
+  clades:
+    - {name: d__Archaea,   pattern: "d__Archaea"}
+    - {name: d__Bacteria,  pattern: "d__Bacteria"}
+    - {name: Eukaryota,    pattern: "Eukaryota|d__Eukaryota|euk__"}
+    - {name: Asgard,       pattern: "Asgard|p__(Lokiarchaeota|Thorarchaeota|Heimdallarchaeota|Odinarchaeota)"}
+    - {name: TACK,         pattern: "TACK|p__(Thaumarchaeota|Aigarchaeota|Crenarchaeota|Korarchaeota|Nitrososphaerota|Thermoproteota)"}
+    - {name: DPANN,        pattern: "DPANN|p__(Nanoarchaeota|Micrarchaeota|Aenigmarchaeota|Nanohaloarchaeota|Altiarchaeota)"}
+
+# -----------------------------------------------------------------------------
+# 7. Outlier / HGT detection
+# -----------------------------------------------------------------------------
+outliers_hgt:
+  phylter:
+    enabled: true
+    taxon_cell_frac_max: 0.30  # slightly more tolerant: sparse data => more gaps
+  reconciliation:
+    enabled: true
+    tool: generax
+    transfers_max: 4           # stricter transfer budget for universal markers
+
+# -----------------------------------------------------------------------------
+# Recoding + policy
+# -----------------------------------------------------------------------------
+recoding:
+  enabled: true                # RECODING TRACK ON for the three-domain regime
+  scheme: dayhoff6             # dayhoff6 | sr4 | sr6
+
+policy:
+  mode: aggressive

@@ -1,0 +1,127 @@
+# =============================================================================
+# MarkerVet regime preset: PROKARYOTE_DEEP
+# -----------------------------------------------------------------------------
+# Domain-level prokaryote phylogeny (Archaea + Bacteria) from the GTDB marker
+# sets (ar53 / bac120) with a GTDB reference tree.  Markers are comparatively
+# dense and clean here, so the support gate can be reasonably strict and amino-
+# acid recoding is off by default.
+# =============================================================================
+
+regime: prokaryote_deep
+workdir: results/prokaryote_deep
+
+# -----------------------------------------------------------------------------
+# Inputs
+# -----------------------------------------------------------------------------
+markers:
+  # extract=false: supply one unaligned FASTA per marker, already reduced to the
+  # taxon sampling of interest.  Set extract=true to run hmmsearch instead.
+  extract: false
+  fasta_dir: "input/prokaryote_deep/markers"   # {marker}.faa
+  fasta_ext: ".faa"
+
+  # --- used only when extract=true --------------------------------------------
+  proteomes_dir: "input/prokaryote_deep/proteomes"  # {taxon}.faa proteomes
+  hmm_dir: "resources/gtdb/hmms"                     # {marker}.hmm (ar53+bac120)
+  # Restrict / order the marker set with an explicit list (path or inline list);
+  # null => discover every *.hmm / *.faa found.
+  hmm_list: null
+
+# Tab-separated taxon annotation table: first column is the leaf name exactly as
+# it appears in the FASTA/tree, remaining columns are arbitrary taxonomy fields.
+# Used by the monophyly stage to assign leaves to named clades.
+taxon_table: "config/prokaryote_deep.taxa.tsv"
+
+# Trusted reference topology (Newick) for the congruence stage -- here the GTDB
+# reference tree pruned to the taxon sampling.
+reference_tree: "resources/gtdb/gtdb_reference.tree"
+
+# -----------------------------------------------------------------------------
+# 2. Alignment + trimming
+# -----------------------------------------------------------------------------
+align:
+  tool: mafft
+  mode: auto        # auto (mafft --auto) | linsi (mafft-linsi, accurate/slow)
+  threads: 4
+trim:
+  tool: clipkit     # clipkit | bmge
+  clipkit_mode: smart-gap
+  bmge_entropy: 0.5 # BMGE -h entropy cutoff (only if tool: bmge)
+
+# -----------------------------------------------------------------------------
+# 3. Artefact screen  (runs BEFORE HGT calling)
+# -----------------------------------------------------------------------------
+artefact:
+  compositional:
+    enabled: true
+    alpha: 0.05        # chi-square p-value; FAIL if p < alpha (heterogeneous)
+  saturation:
+    enabled: true
+    min_slope: 0.55    # regression slope of p-distance ~ patristic; FAIL below
+  treeshrink:
+    enabled: true
+    quantile: 0.05     # TreeShrink -q; more extreme => more aggressive tip removal
+
+# -----------------------------------------------------------------------------
+# 4. Gene trees + support-based collapse
+# -----------------------------------------------------------------------------
+gene_trees:
+  model: "LG+C20+G"    # site-heterogeneous mixture; PMSF used for the final tree
+  pmsf: true
+  ufboot: 1000
+  alrt: 1000
+  threads: 4
+collapse:
+  ufboot_min: 95       # collapse internal branch if UFBoot < this ...
+  alrt_min: 80         # ... and/or aLRT < this, per `logic`
+  logic: either        # either => collapse if it fails EITHER gate (strict)
+
+# -----------------------------------------------------------------------------
+# 5. Congruence vs the reference
+# -----------------------------------------------------------------------------
+congruence:
+  enabled: true
+  support_gate: 80     # only branches at/above this support count as "conflict"
+  rf_max: 0.35         # normalised RF above this (high-support) => conflict/drop
+  quartet_max: 0.30    # normalised quartet distance above this => conflict/drop
+  gcf_min: null        # optional gene-concordance-factor floor (null = ignore)
+
+# -----------------------------------------------------------------------------
+# 6. Monophyly recovery  (headline metric + filter)
+# -----------------------------------------------------------------------------
+monophyly:
+  support_gate: 80     # ignore intruders/splits held only by weak branches
+  recovery_min: 0.80   # per-marker clade_recovery_score below this => drop
+  # Named clades to test.  `pattern` is a regular expression matched against the
+  # leaf name (or, if `column` is given, against that taxon_table column).
+  clades:
+    - {name: d__Archaea,        pattern: "d__Archaea"}
+    - {name: d__Bacteria,       pattern: "d__Bacteria"}
+    - {name: DPANN,             pattern: "DPANN|p__(Nanoarchaeota|Micrarchaeota|Aenigmarchaeota|Nanohaloarchaeota|Altiarchaeota)"}
+    - {name: Asgard,            pattern: "Asgard|p__(Lokiarchaeota|Thorarchaeota|Heimdallarchaeota|Odinarchaeota)"}
+    - {name: Patescibacteria,   pattern: "p__Patescibacteria|CPR"}
+    - {name: p__Cyanobacteria,  pattern: "p__Cyanobacteri"}    # phylum example
+    - {name: c__Alphaproteobacteria, pattern: "c__Alphaproteobacteria"}  # class example
+
+# -----------------------------------------------------------------------------
+# 7. Outlier / HGT detection  (two independent votes)
+# -----------------------------------------------------------------------------
+outliers_hgt:
+  phylter:
+    enabled: true
+    taxon_cell_frac_max: 0.25  # drop if PhylteR removes > this fraction of the
+                               # marker's taxon cells, OR flags it gene-level
+  reconciliation:
+    enabled: true
+    tool: generax              # generax | ale
+    transfers_max: 6           # inferred transfers above this => drop
+
+# -----------------------------------------------------------------------------
+# Recoding + policy
+# -----------------------------------------------------------------------------
+recoding:
+  enabled: false               # amino-acid recoding track off for prokaryote_deep
+  scheme: dayhoff6             # dayhoff6 | sr4 | sr6 (used only if enabled)
+
+policy:
+  mode: aggressive             # aggressive => drop on ANY enabled failure

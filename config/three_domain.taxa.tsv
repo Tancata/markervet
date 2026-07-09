@@ -1,0 +1,8 @@
+# Example taxon annotation table for the three_domain regime.
+# See config/prokaryote_deep.taxa.tsv for the format.  Clades here span all
+# three domains; by default the clade regexes match the leaf name directly, so
+# this file is optional unless a clade uses a `column`.
+taxon	domain	supergroup
+Homo_sapiens|Eukaryota|Opisthokonta	Eukaryota	Opisthokonta
+Loki_Asgard_GC14|d__Archaea|Asgard	d__Archaea	Asgard
+Escherichia_coli|d__Bacteria|Proteobacteria	d__Bacteria	Proteobacteria

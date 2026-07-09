@@ -1,0 +1,10 @@
+# Example taxon annotation table for the prokaryote_deep regime.
+# First column MUST be the leaf name exactly as it appears in the marker FASTAs
+# and gene trees; the remaining columns are arbitrary taxonomy fields that a
+# clade definition may target via its optional `column` key.  If a clade omits
+# `column`, its regex is matched against the leaf name directly and this table
+# is not needed.  Replace the rows below with your real sampling.
+taxon	domain	phylum	class
+GB_GCA_000010565.1|d__Archaea|p__Nanoarchaeota	d__Archaea	p__Nanoarchaeota	c__Nanoarchaeia
+RS_GCF_000008665.1|d__Bacteria|p__Cyanobacteria	d__Bacteria	p__Cyanobacteria	c__Cyanophyceae
+RS_GCF_000195895.1|d__Bacteria|p__Patescibacteria	d__Bacteria	p__Patescibacteria	c__Paceibacteria

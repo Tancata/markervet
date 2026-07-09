@@ -1,0 +1,49 @@
+# =============================================================================
+# MarkerVet conda/mamba environment
+# -----------------------------------------------------------------------------
+#   mamba env create -f envs/markervet.yaml
+#   conda activate markervet
+#
+# Or let Snakemake manage it per-rule:
+#   snakemake --use-conda --conda-frontend mamba ...
+#
+# Pins are intentionally loose (>=) so the scaffold resolves on current
+# bioconda; tighten them for a reproducible production run.
+# =============================================================================
+name: markervet
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  # --- workflow engine ------------------------------------------------------
+  - snakemake-minimal>=7.32
+
+  # --- alignment / trimming -------------------------------------------------
+  - mafft>=7.520
+  - clipkit>=2.1
+  - bmge>=1.12
+
+  # --- tree inference / HMM search / rogue tips -----------------------------
+  - iqtree>=2.2          # provides `iqtree2`
+  - hmmer>=3.3           # provides `hmmsearch`
+  - treeshrink>=1.3      # provides `run_treeshrink.py`
+
+  # --- reconciliation (HGT localisation) ------------------------------------
+  - generax>=2.0
+  - ale>=1.0             # optional ALE track (ALEobserve / ALEml_undated)
+
+  # --- Python stack for the pure-Python screens -----------------------------
+  - python>=3.9
+  - numpy>=1.21
+  - scipy>=1.7
+  - pyyaml>=6.0
+  - dendropy>=4.5
+  - ete3>=3.1
+  - pandas>=1.3          # convenience for downstream analysis of the scorecard
+
+  # --- R stack for PhylteR ---------------------------------------------------
+  - r-base>=4.1
+  - r-phylter>=0.9       # DISTATIS gene x taxon outlier detection
+  - r-ape>=5.6
+  - r-optparse>=1.7
