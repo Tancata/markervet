@@ -37,6 +37,7 @@ marker, a **keep/drop decision** plus **cleaned, trimmed alignments** and
 - [Extending MarkerVet](#extending-markervet)
 - [Troubleshooting / FAQ](#troubleshooting--faq)
 - [References](#references)
+- [License](#license)
 
 ---
 
@@ -564,6 +565,14 @@ use:
 - **MonoPhy** (concept) — Schwery & O'Meara 2016, *PeerJ*.
 - **GTDB** markers/reference — Parks et al. 2018/2022.
 - **Snakemake** — Mölder et al. 2021, *F1000Research*.
+
+---
+
+## License
+
+MarkerVet is released under the **GNU General Public License v3.0** — see
+[`LICENSE`](LICENSE). The external tools it orchestrates carry their own
+licenses; consult each project when redistributing.
 
 ---
 

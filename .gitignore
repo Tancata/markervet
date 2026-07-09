@@ -1,0 +1,39 @@
+# =============================================================================
+# MarkerVet .gitignore
+# -----------------------------------------------------------------------------
+# Run inputs and outputs are large and regenerated, so they are not versioned.
+# Only the pipeline itself (Snakefile, rules/, scripts/, config/, envs/) lives
+# in git.
+# NOTE: git does not support trailing/inline comments in .gitignore -- every
+# comment must be on its own line.
+# =============================================================================
+
+# --- run data (regenerated; do not commit) ----------------------------------
+# pipeline outputs, one subdir per regime
+results/
+# per-marker FASTAs / proteomes you drop in
+input/
+# reference trees, HMM databases, etc.
+resources/
+
+# --- Snakemake ---------------------------------------------------------------
+.snakemake/
+*.snakemake.log
+
+# --- Python ------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.ipynb_checkpoints/
+
+# --- environments ------------------------------------------------------------
+.conda/
+.venv/
+env/
+
+# --- OS / editor cruft -------------------------------------------------------
+.DS_Store
+Thumbs.db
+*.swp
+*~
