@@ -102,8 +102,8 @@ outliers_hgt:
     enabled: true
     taxon_cell_frac_max: 0.30  # slightly more tolerant: sparse data => more gaps
   reconciliation:
-    enabled: true
-    tool: generax
+    enabled: false             # OFF for now; AleRax track to be added later
+    tool: alerax
     transfers_max: 4           # stricter transfer budget for universal markers
 
 # -----------------------------------------------------------------------------

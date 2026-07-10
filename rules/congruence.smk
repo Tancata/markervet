@@ -41,7 +41,7 @@ rule concordance_factors:
         r"""
         mkdir -p $(dirname {output.stat})
         # --gcf takes the gene tree(s); --scf draws quartets from the alignment.
-        iqtree2 -t {input.ref} --gcf {input.gene} -s {input.aln} \
+        iqtree3 -t {input.ref} --gcf {input.gene} -s {input.aln} \
                 --scf 100 -T {threads} --prefix {params.prefix} -redo \
                 > {log} 2>&1
         # Guarantee the declared output exists even for degenerate inputs.

@@ -42,7 +42,7 @@ rule quicktree:
     shell:
         r"""
         mkdir -p $(dirname {output.tree})
-        iqtree2 -s {input.trimmed} -m LG+G -fast -T {threads} \
+        iqtree3 -s {input.trimmed} -m LG+G -fast -T {threads} \
                 --prefix {params.prefix} -redo > {log} 2>&1
         """
 

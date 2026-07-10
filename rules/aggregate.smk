@@ -46,7 +46,11 @@ checkpoint aggregate_scorecard:
         sat=expand(os.path.join(SAT_DIR, "{marker}.tsv"), marker=MARKERS),
         cong=expand(os.path.join(CONG_DIR, "{marker}.tsv"), marker=MARKERS),
         mono=expand(os.path.join(MONO_DIR, "{marker}.summary.tsv"), marker=MARKERS),
-        recon=expand(os.path.join(RECON_DIR, "{marker}.tsv"), marker=MARKERS),
+        # Reconciliation is an optional vote: only require its per-marker outputs
+        # (and thus run the reconciliation rule) when it is enabled in the regime
+        # YAML.  Disabled => empty input, so the vote drops out of the DAG cleanly.
+        recon=(expand(os.path.join(RECON_DIR, "{marker}.tsv"), marker=MARKERS)
+               if config["outliers_hgt"]["reconciliation"]["enabled"] else []),
         phylter=os.path.join(PHYLTER_DIR, "summary.tsv"),
     output:
         scorecard=os.path.join(AGG_DIR, "scorecard.tsv"),

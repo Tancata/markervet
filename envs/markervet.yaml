@@ -9,12 +9,21 @@
 #
 # Pins are intentionally loose (>=) so the scaffold resolves on current
 # bioconda; tighten them for a reproducible production run.
+#
+# NOTE (macOS / Apple Silicon): a few packages are handled outside this file:
+#   * PhylteR   -> the R package is CRAN-only (there is no `r-phylter` conda
+#                  package). Install it after the env is created:
+#                      Rscript -e 'install.packages("phylter", repos="https://cloud.r-project.org")'
+#   * AleRax    -> reconciliation tool; bioconda ships it for linux-64 only.
+#                  On osx-arm64 build from source, or run reconciliation on
+#                  Linux/HPC. Reconciliation is OFF by default in the presets
+#                  (outliers_hgt.reconciliation.enabled: false) until wired up.
 # =============================================================================
 name: markervet
 channels:
   - conda-forge
   - bioconda
-  - defaults
+  - nodefaults
 dependencies:
   # --- workflow engine ------------------------------------------------------
   - snakemake-minimal>=7.32
@@ -25,16 +34,17 @@ dependencies:
   - bmge>=1.12
 
   # --- tree inference / HMM search / rogue tips -----------------------------
-  - iqtree>=2.2          # provides `iqtree2`
+  - iqtree>=3            # provides `iqtree3` (pipeline calls iqtree3)
   - hmmer>=3.3           # provides `hmmsearch`
   - treeshrink>=1.3      # provides `run_treeshrink.py`
 
   # --- reconciliation (HGT localisation) ------------------------------------
-  - generax>=2.0
-  - ale>=1.0             # optional ALE track (ALEobserve / ALEml_undated)
+  # AleRax is the intended reconciliation tool but is not on bioconda for
+  # osx-arm64 (linux-64 only). It is installed/built separately; see the note
+  # at the top of this file. Reconciliation is disabled in the presets for now.
 
   # --- Python stack for the pure-Python screens -----------------------------
-  - python>=3.9
+  - python>=3.9,<3.13    # <3.13 keeps ete3 happy
   - numpy>=1.21
   - scipy>=1.7
   - pyyaml>=6.0
@@ -43,7 +53,8 @@ dependencies:
   - pandas>=1.3          # convenience for downstream analysis of the scorecard
 
   # --- R stack for PhylteR ---------------------------------------------------
+  # r-phylter is NOT a conda package: install `phylter` from CRAN post-hoc
+  # (see the note at the top of this file).
   - r-base>=4.1
-  - r-phylter>=0.9       # DISTATIS gene x taxon outlier detection
   - r-ape>=5.6
   - r-optparse>=1.7

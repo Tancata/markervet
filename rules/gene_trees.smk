@@ -39,7 +39,7 @@ if _gt.get("pmsf", True):
         shell:
             r"""
             mkdir -p $(dirname {output.guide})
-            iqtree2 -s {input.clean} -m {params.model} -T {threads} \
+            iqtree3 -s {input.clean} -m {params.model} -T {threads} \
                     --prefix {params.prefix} -redo > {log} 2>&1
             """
 
@@ -62,7 +62,7 @@ if _gt.get("pmsf", True):
         shell:
             r"""
             mkdir -p $(dirname {output.tree})
-            iqtree2 -s {input.clean} -m {params.model} -ft {input.guide} \
+            iqtree3 -s {input.clean} -m {params.model} -ft {input.guide} \
                     -B {params.ufboot} -alrt {params.alrt} -T {threads} \
                     --prefix {params.prefix} -redo > {log} 2>&1
             """
@@ -86,7 +86,7 @@ else:
         shell:
             r"""
             mkdir -p $(dirname {output.tree})
-            iqtree2 -s {input.clean} -m {params.model} \
+            iqtree3 -s {input.clean} -m {params.model} \
                     -B {params.ufboot} -alrt {params.alrt} -T {threads} \
                     --prefix {params.prefix} -redo > {log} 2>&1
             """

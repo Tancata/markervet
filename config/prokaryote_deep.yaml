@@ -112,8 +112,8 @@ outliers_hgt:
     taxon_cell_frac_max: 0.25  # drop if PhylteR removes > this fraction of the
                                # marker's taxon cells, OR flags it gene-level
   reconciliation:
-    enabled: true
-    tool: generax              # generax | ale
+    enabled: false             # OFF for now; AleRax track to be added later
+    tool: alerax               # generax | ale | alerax
     transfers_max: 6           # inferred transfers above this => drop
 
 # -----------------------------------------------------------------------------
