@@ -69,12 +69,16 @@ if _art["treeshrink"]["enabled"]:
             mkdir -p {params.outdir} $(dirname {output.clean})
             run_treeshrink.py -t {input.tree} -a {input.trimmed} \
                 -q {params.quantile} -O out -o {params.outdir} > {log} 2>&1
-            # TreeShrink writes out.fasta (cleaned alignment) and out.txt
-            # (whitespace-separated removed tip labels, one gene per line).
-            cp {params.outdir}/out.fasta {output.clean}
+            # TreeShrink writes {{outdir}}/out.txt: whitespace-separated removed
+            # tip labels (one line per gene).  In single-gene mode it does NOT
+            # reliably emit the shrunk alignment, so we derive the cleaned FASTA
+            # ourselves by dropping the removed tips from the trimmed alignment.
             ( [ -f {params.outdir}/out.txt ] && tr '\t' '\n' \
                 < {params.outdir}/out.txt | sed '/^$/d' > {output.removed} ) \
                 || : > {output.removed}
+            awk 'NR==FNR{{rm[$1]=1; next}} \
+                 /^>/{{k=substr($1,2); drop=(k in rm)}} !drop' \
+                {output.removed} {input.trimmed} > {output.clean}
             """
 
 else:

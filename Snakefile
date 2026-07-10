@@ -131,6 +131,7 @@ include: "rules/monophyly.smk"       # 6. MonoPhy-style clade recovery
 include: "rules/outliers_hgt.smk"    # 7. PhylteR + reconciliation
 include: "rules/aggregate.smk"       # 8. aggressive scorecard
 include: "rules/outputs.smk"         # 9. cleaned outputs + supermatrix + report
+include: "rules/supertree.smk"       # 10. ASTER/ASTRAL coalescent supertree
 
 
 # -----------------------------------------------------------------------------
@@ -146,3 +147,6 @@ rule all:
         supermatrix=os.path.join(RESULTS, "outputs", "supermatrix.fasta"),
         partitions=os.path.join(RESULTS, "outputs", "supermatrix.partitions"),
         genetrees=os.path.join(RESULTS, "outputs", "gene_trees.done"),
+        # Coalescent supertree (stage 10); toggled by supertree.enabled.
+        supertree=(os.path.join(RESULTS, "outputs", "supertree.nwk")
+                   if config.get("supertree", {}).get("enabled", True) else []),

@@ -1,0 +1,149 @@
+# =============================================================================
+# MarkerVet regime preset: BACTERIA  (broad Bacteria tree)
+# -----------------------------------------------------------------------------
+# 63 OMA orthogroups across 264 bacterial genomes (ShortCodes n0..n264), broadly
+# sampled across GTDB phyla, with the GTDB bac120 reference tree pruned/relabelled
+# to the sampling.  Taxa are keyed by ShortCode everywhere (marker FASTAs,
+# reference tree, taxon table).  Goal: evaluate how the cleaning screens affect
+# inference of a bacterial species tree.
+#
+# Gene trees use a light per-marker best-fit model (IQ-TREE ModelFinder, -m MFP)
+# rather than a heavy site-heterogeneous mixture, to keep a first pass tractable.
+# Reconciliation is OFF (AleRax track to be added later).
+# =============================================================================
+
+regime: bacteria
+workdir: results/bacteria
+
+# -----------------------------------------------------------------------------
+# Inputs
+# -----------------------------------------------------------------------------
+markers:
+  extract: false
+  fasta_dir: "input/bacteria/markers"     # {marker}.faa, headers = ShortCode
+  fasta_ext: ".faa"
+  proteomes_dir: "input/bacteria/proteomes"
+  hmm_dir: "resources/bacteria/hmms"
+  hmm_list: null
+
+# First column = ShortCode (leaf name); columns include "GTDB Taxonomy" and PVC.
+taxon_table: "config/bacteria.taxa.tsv"
+
+# GTDB bac120 reference tree, pruned to the 252 sampled genomes present in it and
+# relabelled from accession to ShortCode.
+reference_tree: "resources/bacteria/reference.tree"
+
+# -----------------------------------------------------------------------------
+# 2. Alignment + trimming
+# -----------------------------------------------------------------------------
+align:
+  tool: mafft
+  mode: auto
+  threads: 4
+trim:
+  tool: clipkit
+  clipkit_mode: smart-gap
+  bmge_entropy: 0.5
+
+# -----------------------------------------------------------------------------
+# 3. Artefact screen
+# -----------------------------------------------------------------------------
+artefact:
+  compositional:
+    enabled: true
+    alpha: 0.05
+  saturation:
+    enabled: true
+    min_slope: 0.55
+  treeshrink:
+    enabled: true
+    quantile: 0.05
+
+# -----------------------------------------------------------------------------
+# 4. Gene trees + support-based collapse
+# -----------------------------------------------------------------------------
+gene_trees:
+  model: "MFP"         # ModelFinder Plus: pick the best-fit model per marker
+  pmsf: false          # no PMSF (that is for CXX mixtures); single-step search
+  ufboot: 1000
+  alrt: 1000
+  threads: 4
+collapse:
+  ufboot_min: 95
+  alrt_min: 80
+  logic: either
+
+# -----------------------------------------------------------------------------
+# 5. Congruence vs the reference (bac120)
+# -----------------------------------------------------------------------------
+congruence:
+  enabled: true
+  support_gate: 80
+  rf_max: 0.35
+  quartet_max: 0.30
+  gcf_min: null
+
+# -----------------------------------------------------------------------------
+# 6. Monophyly recovery -- GTDB phyla (well-sampled: >=4 genomes)
+# -----------------------------------------------------------------------------
+# Patterns match the "GTDB Taxonomy" column; the trailing ';' pins the phylum so
+# e.g. p__Verrucomicrobiota does not also match p__Verrucomicrobiota_A.
+monophyly:
+  support_gate: 80
+  recovery_min: 0.80
+  clades:
+    - {name: Desulfobacterota,   pattern: "p__Desulfobacterota;",   column: "GTDB Taxonomy"}
+    - {name: Patescibacteria,    pattern: "p__Patescibacteria;",    column: "GTDB Taxonomy"}
+    - {name: Actinobacteriota,   pattern: "p__Actinobacteriota;",   column: "GTDB Taxonomy"}
+    - {name: Planctomycetota,    pattern: "p__Planctomycetota;",    column: "GTDB Taxonomy"}
+    - {name: Firmicutes_B,       pattern: "p__Firmicutes_B;",       column: "GTDB Taxonomy"}
+    - {name: Acidobacteriota,    pattern: "p__Acidobacteriota;",    column: "GTDB Taxonomy"}
+    - {name: Bacteroidota,       pattern: "p__Bacteroidota;",       column: "GTDB Taxonomy"}
+    - {name: Spirochaetota,      pattern: "p__Spirochaetota;",      column: "GTDB Taxonomy"}
+    - {name: Armatimonadota,     pattern: "p__Armatimonadota;",     column: "GTDB Taxonomy"}
+    - {name: Firmicutes_G,       pattern: "p__Firmicutes_G;",       column: "GTDB Taxonomy"}
+    - {name: Chloroflexota,      pattern: "p__Chloroflexota;",      column: "GTDB Taxonomy"}
+    - {name: Myxococcota,        pattern: "p__Myxococcota;",        column: "GTDB Taxonomy"}
+    - {name: Firmicutes_A,       pattern: "p__Firmicutes_A;",       column: "GTDB Taxonomy"}
+    - {name: Proteobacteria,     pattern: "p__Proteobacteria;",     column: "GTDB Taxonomy"}
+    - {name: Firmicutes_E,       pattern: "p__Firmicutes_E;",       column: "GTDB Taxonomy"}
+    - {name: Verrucomicrobiota,  pattern: "p__Verrucomicrobiota;",  column: "GTDB Taxonomy"}
+    - {name: Firmicutes_D,       pattern: "p__Firmicutes_D;",       column: "GTDB Taxonomy"}
+    - {name: Elusimicrobiota,    pattern: "p__Elusimicrobiota;",    column: "GTDB Taxonomy"}
+    - {name: Cyanobacteria,      pattern: "p__Cyanobacteria;",      column: "GTDB Taxonomy"}
+    - {name: Nitrospirota,       pattern: "p__Nitrospirota;",       column: "GTDB Taxonomy"}
+    - {name: Marinisomatota,     pattern: "p__Marinisomatota;",     column: "GTDB Taxonomy"}
+    - {name: Margulisbacteria,   pattern: "p__Margulisbacteria;",   column: "GTDB Taxonomy"}
+    - {name: Fibrobacterota,     pattern: "p__Fibrobacterota;",     column: "GTDB Taxonomy"}
+    - {name: Bdellovibrionota,   pattern: "p__Bdellovibrionota;",   column: "GTDB Taxonomy"}
+
+# -----------------------------------------------------------------------------
+# 7. Outlier / HGT detection
+# -----------------------------------------------------------------------------
+outliers_hgt:
+  phylter:
+    enabled: true
+    taxon_cell_frac_max: 0.25
+  reconciliation:
+    enabled: false             # OFF for now; AleRax track to be added later
+    tool: alerax               # generax | ale | alerax
+    transfers_max: 6
+
+# -----------------------------------------------------------------------------
+# Recoding + policy
+# -----------------------------------------------------------------------------
+recoding:
+  enabled: false
+  scheme: dayhoff6
+
+policy:
+  mode: aggressive
+
+# -----------------------------------------------------------------------------
+# 10. Supertree (ASTER / ASTRAL) -- coalescent species tree from KEEP gene trees
+# -----------------------------------------------------------------------------
+supertree:
+  enabled: true
+  tool: astral        # astral (ASTRAL-IV) | wastral | astral-pro
+  threads: 4
+  extra_args: ""

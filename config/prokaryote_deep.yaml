@@ -125,3 +125,12 @@ recoding:
 
 policy:
   mode: aggressive             # aggressive => drop on ANY enabled failure
+
+# -----------------------------------------------------------------------------
+# 10. Supertree (ASTER / ASTRAL) -- coalescent species tree from KEEP gene trees
+# -----------------------------------------------------------------------------
+supertree:
+  enabled: true
+  tool: astral        # astral (ASTRAL-IV) | wastral | astral-pro
+  threads: 4
+  extra_args: ""
