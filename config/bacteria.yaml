@@ -65,11 +65,15 @@ artefact:
 gene_trees:
   model: "LG+G"        # fixed best-fit model; skips ModelFinder for a fast first pass
   pmsf: false          # no PMSF (that is for CXX mixtures); single-step search
-  ufboot: 1000
-  alrt: 1000
+  fast: true           # IQ-TREE -fast quick search (~3 min/marker vs ~40 min full)
+  ufboot: 1000         # (ignored in fast mode: UFBoot is incompatible with -fast)
+  alrt: 1000           # SH-aLRT support -- the only support in fast mode
   threads: 2           # 2 threads x 4 concurrent (with -c8) beats 4 x 2 at this size
 collapse:
-  ufboot_min: 95
+  # In fast mode the gene tree carries a single SH-aLRT value per branch, which
+  # collapse_support reads via the ufboot slot -- so ufboot_min is the SH-aLRT
+  # collapse threshold here (80 = the usual SH-aLRT cutoff).
+  ufboot_min: 80
   alrt_min: 80
   logic: either
 

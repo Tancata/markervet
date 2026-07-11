@@ -21,6 +21,16 @@ GT_DIR = os.path.join(RESULTS, "genetrees")
 _gt = config["gene_trees"]
 _col = config["collapse"]
 
+# Search / support flags for the single-step (non-PMSF) gene-tree rule.
+#   fast: true  -> IQ-TREE quick search (-fast) with SH-aLRT support only.
+#                  UFBoot is incompatible with -fast, so no -B; the lone SH-aLRT
+#                  value is what the collapse / monophyly support gates read.
+#   fast: false -> full search with UFBoot + SH-aLRT (labels "aLRT/UFBoot").
+if _gt.get("fast", False):
+    _SEARCH_FLAGS = "-fast -alrt %d" % _gt["alrt"]
+else:
+    _SEARCH_FLAGS = "-B %d -alrt %d" % (_gt["ufboot"], _gt["alrt"])
+
 
 if _gt.get("pmsf", True):
 
@@ -77,8 +87,7 @@ else:
             tree=os.path.join(GT_DIR, "{marker}.treefile"),
         params:
             model=_gt["model"],
-            ufboot=_gt["ufboot"],
-            alrt=_gt["alrt"],
+            search=_SEARCH_FLAGS,
             prefix=os.path.join(GT_DIR, "{marker}"),
         threads: _gt.get("threads", 4)
         log:
@@ -87,7 +96,7 @@ else:
             r"""
             mkdir -p $(dirname {output.tree})
             iqtree3 -s {input.clean} -m {params.model} \
-                    -B {params.ufboot} -alrt {params.alrt} -T {threads} \
+                    {params.search} -T {threads} \
                     --prefix {params.prefix} -redo > {log} 2>&1
             """
 
