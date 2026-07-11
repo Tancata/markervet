@@ -63,11 +63,11 @@ artefact:
 # 4. Gene trees + support-based collapse
 # -----------------------------------------------------------------------------
 gene_trees:
-  model: "MFP"         # ModelFinder Plus: pick the best-fit model per marker
+  model: "LG+G"        # fixed best-fit model; skips ModelFinder for a fast first pass
   pmsf: false          # no PMSF (that is for CXX mixtures); single-step search
   ufboot: 1000
   alrt: 1000
-  threads: 4
+  threads: 2           # 2 threads x 4 concurrent (with -c8) beats 4 x 2 at this size
 collapse:
   ufboot_min: 95
   alrt_min: 80
