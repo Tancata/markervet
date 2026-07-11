@@ -76,9 +76,13 @@ if _art["treeshrink"]["enabled"]:
             ( [ -f {params.outdir}/out.txt ] && tr '\t' '\n' \
                 < {params.outdir}/out.txt | sed '/^$/d' > {output.removed} ) \
                 || : > {output.removed}
-            awk 'NR==FNR{{rm[$1]=1; next}} \
+            # Read the removed-tip set in BEGIN via getline (robust when the
+            # removed list is EMPTY -- the NR==FNR two-file idiom breaks there,
+            # consuming the whole alignment as "removed" and emitting nothing).
+            awk -v rmf={output.removed} \
+                'BEGIN{{while((getline l < rmf)>0){{if(l!="") rm[l]=1}}}} \
                  /^>/{{k=substr($1,2); drop=(k in rm)}} !drop' \
-                {output.removed} {input.trimmed} > {output.clean}
+                {input.trimmed} > {output.clean}
             """
 
 else:
